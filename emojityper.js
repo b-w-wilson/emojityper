@@ -32,6 +32,17 @@ function checkForEditableContent() {
 
 var emojiTyper = function (v, e) {
 
+    //Test if the string matches an xD
+    var xDRegex = /xD/i;
+    if (xDRegex.test(e.srcElement.innerText)) {
+        //Delete the existing + sign
+        for (var d = 0; d < 2; d++) {
+            document.execCommand('delete', false);
+        }
+        //Insert the new emoji
+        document.execCommand('insertText', false, emojijson["joy"]);
+    }
+    
     //Test if the string matches an emoji followed by a +
     var plusRegex = /.+\+/i;
     if (plusRegex.test(e.srcElement.innerText)) {
@@ -83,8 +94,8 @@ var emojiTyper = function (v, e) {
 
                 var html = "<div id=\"emojipredictions\" style=\"height:50px; width:400px; overflow-x: hidden; overflow-y:scroll; scrollbar-width: thin; z-index: 1000; position:fixed; border: 1px solid #D3D3D3; background-color:white; top:" + (result.top - v.clientHeight - 40) + "px; left:" + result.left + "px;\">";
                 for (var predicted in array) {
-                    html += "<div style=\"float:left;\">";
-                    html += "<span style=\"display:inline;width:40px;font-size:2em;overflow:hidden;\">" + emojijson[array[predicted]] + "<span style=\"position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em; left: -20px;\">" + array[predicted] + "</span>" + "</span>";
+                    html += "<div style=\"float:left;width:33%;height:40px;\">";
+                    html += "<span style=\"display:block;font-size:2em;overflow:hidden;white-space: nowrap;text-overflow: ellipsis\">" + emojijson[array[predicted]] + "<span style=\"white-space: nowrap;text-overflow: ellipsis;position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em;\">" + array[predicted] + "</span>" + "</span>";
                     html += "</div>";
                 }
                 html += "</div>";
@@ -95,8 +106,8 @@ var emojiTyper = function (v, e) {
                 bar.innerText = "";
                 for (var predicted in array) {
                     var html = "";
-                    html += "<div style=\"float:left;\">";
-                    html += "<span style=\"display:inline;width:40px;font-size:2em;overflow:hidden;\">" + emojijson[array[predicted]] + "<span style=\"position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em; left: -20px;\">" + array[predicted] + "</span>" + "</span>";
+                    html += "<div style=\"float:left;width:33%;height:40px;\">";
+                    html += "<span style=\"display:block;font-size:2em;overflow:hidden;white-space: nowrap;text-overflow: ellipsis\">" + emojijson[array[predicted]] + "<span style=\"white-space: nowrap;text-overflow: ellipsis;position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em;\">" + array[predicted] + "</span>" + "</span>";
                     html += "</div>";
                     bar.innerHTML += html;
                 }
