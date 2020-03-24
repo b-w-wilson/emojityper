@@ -1,3 +1,7 @@
+/**
+ * TODO
+ */
+
 console.log("Loading EmojiTyper");
 setInterval(checkForEditableContent, 500);
 
@@ -10,67 +14,102 @@ function checkForEditableContent() {
             v.setAttribute('emojityper', 'true');
 
             //Add event handler for input
-            v.addEventListener("input", function (e) {
-                console.log("update");
-                var regex = /\:.+\:/i;
-                //Test if the string matches a full emoji for replacement
-                if (regex.test(e.srcElement.innerText)) {
-                    for (var key in emojijson) {
-                        if (e.srcElement.innerText.includes(":" + key + ":")) {
-                            //Delete the existing text e.g. :joy:
-                            for (var d = 0; d < 2 + key.length; d++) {
-                                document.execCommand('delete', false);
-                            }
-                            //Insert the new emoji
-                            document.execCommand('insertText', false, emojijson[key]);
-                            break;
-                        }
+            v.addEventListener("input", function (e) { emojiTyper(v, e) }, false);
+            v.addEventListener("keyup", function (e) {
+                var types = [8];
+                for (var t in types) {
+                    if (e.keyCode == types[t]) {
+                        emojiTyper(v, e);
                     }
                 }
-                //Test if the string partially matches and offer predictions
-                var possibleRegex = /\:[^\s]+/i;
-                if (possibleRegex.test(e.srcElement.innerText)) {
-                    //Extract typed text for predicting against
-                    var prediction = e.srcElement.innerText.match(possibleRegex)[0];
-                    if (prediction) {
-                        prediction = prediction.substring(1);
-                        var array = [];
-                        for (var key in emojijson) {
-                            if (key.startsWith(prediction)) {
-                                array.push(key);
-                            }
-                        }
-                        var bar = document.getElementById("emojipredictions");
-                        if (!bar) {
-                            var barDiv = document.createElement("div");
-                            var result = cumulativeOffset(v);
-                            var html = "<div id=\"emojipredictions\" style=\"height:40px; width:100px; z-index: 1000; position:fixed; border-radius: 10px; border: 3px solid #D3D3D3; background-color:white; top:" + (result.top - v.clientHeight - 40) + "px; left:" + result.left + "px;\">";
-                            for (var predicted in array) {
-                                html += emojijson[array[predicted]];
-                            }
-                            html += "</div>";
-                            barDiv.innerHTML = html;
-                            document.body.appendChild(barDiv);
-                        } else {
-                            bar.style.visibility = "visible";
-                            bar.innerText = "";
-                            for (var predicted in array) {
-                                bar.innerText += emojijson[array[predicted]];
-                            }
-                        }
-                    }
 
-                } else {
-                    var bar = document.getElementById("emojipredictions");
-                    if (bar) {
-                        bar.style.visibility = "hidden";
-                    }
-                }
             }, false);
+
         }
 
     }
 }
+
+var emojiTyper = function (v, e) {
+
+    //Test if the string matches an emoji followed by a +
+    var plusRegex = /.+\+/i;
+    if (plusRegex.test(e.srcElement.innerText)) {
+        for (var key in emojijson) {
+            if (e.srcElement.innerText.toLowerCase().includes(emojijson[key] + "+")) {
+                //Delete the existing + sign
+                document.execCommand('delete', false);
+
+                //Insert the new emoji
+                document.execCommand('insertText', false, emojijson[key]);
+                break;
+            }
+        }
+    }
+
+    //Test if the string matches a full emoji for replacement
+    var regex = /\:.+\:/i;
+    if (regex.test(e.srcElement.innerText)) {
+        for (var key in emojijson) {
+            if (e.srcElement.innerText.toLowerCase().includes(":" + key + ":")) {
+                //Delete the existing text e.g. :joy:
+                for (var d = 0; d < 2 + key.length; d++) {
+                    document.execCommand('delete', false);
+                }
+                //Insert the new emoji
+                document.execCommand('insertText', false, emojijson[key]);
+                break;
+            }
+        }
+    }
+
+    //Test if the string partially matches and offer predictions
+    var possibleRegex = /\:[^\s]+/i;
+    if (possibleRegex.test(e.srcElement.innerText)) {
+        //Extract typed text for predicting against
+        var prediction = e.srcElement.innerText.toLowerCase().match(possibleRegex)[0];
+        if (prediction) {
+            prediction = prediction.substring(1);
+            var array = [];
+            for (var key in emojijson) {
+                if (key.startsWith(prediction)) {
+                    array.push(key);
+                }
+            }
+            var bar = document.getElementById("emojipredictions");
+            if (!bar) {
+                var barDiv = document.createElement("div");
+                var result = cumulativeOffset(v);
+
+                var html = "<div id=\"emojipredictions\" style=\"height:50px; width:400px; overflow-x: hidden; overflow-y:scroll; scrollbar-width: thin; z-index: 1000; position:fixed; border: 1px solid #D3D3D3; background-color:white; top:" + (result.top - v.clientHeight - 40) + "px; left:" + result.left + "px;\">";
+                for (var predicted in array) {
+                    html += "<div style=\"float:left;\">";
+                    html += "<span style=\"display:inline;width:40px;font-size:2em;overflow:hidden;\">" + emojijson[array[predicted]] + "<span style=\"position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em; left: -20px;\">" + array[predicted] + "</span>" + "</span>";
+                    html += "</div>";
+                }
+                html += "</div>";
+                barDiv.innerHTML = html;
+                document.body.appendChild(barDiv);
+            } else {
+                bar.style.visibility = "visible";
+                bar.innerText = "";
+                for (var predicted in array) {
+                    var html = "";
+                    html += "<div style=\"float:left;\">";
+                    html += "<span style=\"display:inline;width:40px;font-size:2em;overflow:hidden;\">" + emojijson[array[predicted]] + "<span style=\"position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em; left: -20px;\">" + array[predicted] + "</span>" + "</span>";
+                    html += "</div>";
+                    bar.innerHTML += html;
+                }
+            }
+        }
+
+    } else {
+        var bar = document.getElementById("emojipredictions");
+        if (bar) {
+            bar.style.visibility = "hidden";
+        }
+    }
+};
 
 var cumulativeOffset = function (element) {
     var top = 0, left = 0;
