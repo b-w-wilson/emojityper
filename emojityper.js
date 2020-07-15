@@ -1,22 +1,35 @@
 /**
- * TODO
+ * Author: Bruce W
+ * EmojiTyper main JavaScript file.
  */
 
-console.log("Loading EmojiTyper");
+ /**
+  * Setup timer to check page for editable content
+  */
 setInterval(checkForEditableContent, 500);
 
+/**
+ * Find content on the page with either the "contenteditable" attribute or as a type of "input"
+ */
 function checkForEditableContent() {
-    var contEditables = document.querySelectorAll('[contenteditable]');
+    addEventListeners(document.querySelectorAll('[contenteditable]'));
+    addEventListeners(document.querySelectorAll('input'));
 
-    for (var i = 0; i < contEditables.length; i++) {
-        var v = contEditables[i];
+}
+
+function addEventListeners(list){
+    for (var i = 0; i < list.length; i++) {
+        var v = list[i];
+
+        //Only attach event handlers if one has NOT been added before.
         if (v.getAttribute('emojityper') !== 'true') {
             v.setAttribute('emojityper', 'true');
 
-            //Add event handler for input
+            //Attach event handlers to element
             v.addEventListener("input", function (e) { emojiTyper(v, e) }, false);
             v.addEventListener("keyup", function (e) {
-                var types = [8];
+                //Only handle keyup events of types defined. These types corrispond to keycodes, e.g. 8 is backspace, 61 is =
+                var types = [8,61];
                 for (var t in types) {
                     if (e.keyCode == types[t]) {
                         emojiTyper(v, e);
@@ -35,7 +48,7 @@ var emojiTyper = function (v, e) {
     //Test if the string matches an xD
     var xDRegex = /xD/i;
     if (xDRegex.test(e.srcElement.innerText)) {
-        //Delete the existing + sign
+        //Delete the existing xD
         for (var d = 0; d < 2; d++) {
             document.execCommand('delete', false);
         }
@@ -77,6 +90,7 @@ var emojiTyper = function (v, e) {
     //Test if the string partially matches and offer predictions
     var possibleRegex = /\:[^\s]+/i;
     if (possibleRegex.test(e.srcElement.innerText)) {
+
         //Extract typed text for predicting against
         var prediction = e.srcElement.innerText.toLowerCase().match(possibleRegex)[0];
         if (prediction) {
@@ -87,6 +101,8 @@ var emojiTyper = function (v, e) {
                     array.push(key);
                 }
             }
+
+            //Create the emojipredictions bar. 
             var bar = document.getElementById("emojipredictions");
             if (!bar) {
                 var barDiv = document.createElement("div");
@@ -102,6 +118,13 @@ var emojiTyper = function (v, e) {
                 barDiv.innerHTML = html;
                 document.body.appendChild(barDiv);
             } else {
+                var result = cumulativeOffset(v);
+                
+                var calcX = (result.left);
+                var calcY = (result.top - v.clientHeight - 40);
+
+                bar.style.top = calcY + "px"; 
+                bar.style.left = calcX + "px";
                 bar.style.visibility = "visible";
                 bar.innerText = "";
                 for (var predicted in array) {
