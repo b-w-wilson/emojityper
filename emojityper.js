@@ -14,7 +14,6 @@ setInterval(checkForEditableContent, 500);
 function checkForEditableContent() {
     addEventListeners(document.querySelectorAll('[contenteditable]'));
     addEventListeners(document.querySelectorAll('input'));
-
 }
 
 function addEventListeners(list){
@@ -28,7 +27,7 @@ function addEventListeners(list){
             //Attach event handlers to element
             v.addEventListener("input", function (e) { emojiTyper(v, e) }, false);
             v.addEventListener("keyup", function (e) {
-                //Only handle keyup events of types defined. These types corrispond to keycodes, e.g. 8 is backspace, 61 is =
+                //Only handle keyup events of types defined. These types correspond to keycodes, e.g. 8 is backspace, 61 is =+
                 var types = [8,61];
                 for (var t in types) {
                     if (e.keyCode == types[t]) {
@@ -106,7 +105,7 @@ var emojiTyper = function (v, e) {
             var bar = document.getElementById("emojipredictions");
             if (!bar) {
                 var barDiv = document.createElement("div");
-                var result = cumulativeOffset(v);
+                var result = cumulativeOffset(e.srcElement);
 
                 var html = "<div id=\"emojipredictions\" style=\"height:50px; width:400px; overflow-x: hidden; overflow-y:scroll; scrollbar-width: thin; z-index: 1000; position:fixed; border: 1px solid #D3D3D3; background-color:white; top:" + (result.top - v.clientHeight - 40) + "px; left:" + result.left + "px;\">";
                 for (var predicted in array) {
@@ -118,8 +117,7 @@ var emojiTyper = function (v, e) {
                 barDiv.innerHTML = html;
                 document.body.appendChild(barDiv);
             } else {
-                var result = cumulativeOffset(v);
-                
+                var result = cumulativeOffset(e.srcElement);
                 var calcX = (result.left);
                 var calcY = (result.top - v.clientHeight - 40);
 
