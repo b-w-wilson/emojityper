@@ -3,9 +3,9 @@
  * EmojiTyper main JavaScript file.
  */
 
- /**
-  * Setup timer to check page for editable content
-  */
+/**
+ * Setup timer to check page for editable content
+ */
 setInterval(checkForEditableContent, 500);
 
 /**
@@ -16,7 +16,12 @@ function checkForEditableContent() {
     addEventListeners(document.querySelectorAll('input'));
 }
 
-function addEventListeners(list){
+/**
+ * Add event listener to list of objects, collected from query selector
+ * @param {*} list List of DOM elements
+ */
+function addEventListeners(list) {
+    //Loop through all elements in list
     for (var i = 0; i < list.length; i++) {
         var v = list[i];
 
@@ -28,7 +33,7 @@ function addEventListeners(list){
             v.addEventListener("input", function (e) { emojiTyper(v, e) }, false);
             v.addEventListener("keyup", function (e) {
                 //Only handle keyup events of types defined. These types correspond to keycodes, e.g. 8 is backspace, 61 is =+
-                var types = [8,61];
+                var types = [8, 61];
                 for (var t in types) {
                     if (e.keyCode == types[t]) {
                         emojiTyper(v, e);
@@ -36,9 +41,7 @@ function addEventListeners(list){
                 }
 
             }, false);
-
         }
-
     }
 }
 
@@ -54,7 +57,7 @@ var emojiTyper = function (v, e) {
         //Insert the new emoji
         document.execCommand('insertText', false, emojijson["joy"]);
     }
-    
+
     //Test if the string matches an emoji followed by a +
     var plusRegex = /.+\+/i;
     if (plusRegex.test(e.srcElement.innerText)) {
@@ -101,36 +104,97 @@ var emojiTyper = function (v, e) {
                 }
             }
 
-            //Create the emojipredictions bar. 
+            //Find the bar DOM element
             var bar = document.getElementById("emojipredictions");
+
+            //Test if the bar exists, if not, create it
             if (!bar) {
+                //Create bar DOM element using DOM construction
                 var barDiv = document.createElement("div");
+
+                //Grab cumulative offset up to element that is being written in
                 var result = cumulativeOffset(e.srcElement);
 
-                var html = "<div id=\"emojipredictions\" style=\"height:50px; width:400px; overflow-x: hidden; overflow-y:scroll; scrollbar-width: thin; z-index: 1000; position:fixed; border: 1px solid #D3D3D3; background-color:white; top:" + (result.top - v.clientHeight - 40) + "px; left:" + result.left + "px;\">";
+                barDiv.id = "emojipredictions";
+                barDiv.style.height = "50px";
+                barDiv.style.width = "400px";
+                barDiv.style.overflowX = "hidden";
+                barDiv.style.overflowY = "scroll";
+                // barDiv.style.scroll.width="thin";
+                barDiv.style.zIndex = "1000";
+                barDiv.style.position = "fixed";
+                barDiv.style.border = "1px solid #D3D3D3";
+                barDiv.style.backgroundColor = "white";
+                barDiv.style.top = (result.top - v.clientHeight - 40) + "px";
+                barDiv.style.left = result.left + "px";
+
+                //For each predicted emoji, create DOM element, and put in bar
                 for (var predicted in array) {
-                    html += "<div style=\"float:left;width:33%;height:40px;\">";
-                    html += "<span style=\"display:block;font-size:2em;overflow:hidden;white-space: nowrap;text-overflow: ellipsis\">" + emojijson[array[predicted]] + "<span style=\"white-space: nowrap;text-overflow: ellipsis;position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em;\">" + array[predicted] + "</span>" + "</span>";
-                    html += "</div>";
+                    var emojiPrediction = document.createElement("div");
+                    emojiPrediction.style.float = "left";
+                    emojiPrediction.style.width = "33%";
+                    emojiPrediction.style.height = "40px";
+                    var outerSpan = document.createElement("span");
+                    outerSpan.style.display = "block";
+                    outerSpan.style.fontSize = "2em";
+                    outerSpan.style.overflow = "hidden";
+                    outerSpan.style.whiteSpace = "nowrap";
+                    outerSpan.style.textOverflow = "ellipsis";
+                    outerSpan.appendChild(document.createTextNode(emojijson[array[predicted]]));
+
+                    var innerSpan = document.createElement("span");
+                    innerSpan.style.whiteSpace = "nowrap";
+                    innerSpan.style.textOverflow = "ellipsis";
+                    innerSpan.style.position = "relative";
+                    innerSpan.style.fontFamily = "Trebuchet MS";
+                    innerSpan.style.fontSize = "0.5em";
+                    innerSpan.style.overflow = "hidden";
+                    innerSpan.appendChild(document.createTextNode(array[predicted]));
+                    outerSpan.appendChild(innerSpan);
+                    emojiPrediction.appendChild(outerSpan);
+                    barDiv.appendChild(emojiPrediction);
                 }
-                html += "</div>";
-                barDiv.innerHTML = html;
+
                 document.body.appendChild(barDiv);
             } else {
+                //If the bar already exists, move it into the correct position
                 var result = cumulativeOffset(e.srcElement);
                 var calcX = (result.left);
                 var calcY = (result.top - v.clientHeight - 40);
 
-                bar.style.top = calcY + "px"; 
+                bar.style.top = calcY + "px";
                 bar.style.left = calcX + "px";
                 bar.style.visibility = "visible";
-                bar.innerText = "";
+
+                //Remove all existing predictions
+                while (bar.firstChild) {
+                    bar.removeChild(bar.lastChild);
+                }
+                //For each predicted emoji, create DOM element, and put in bar
                 for (var predicted in array) {
-                    var html = "";
-                    html += "<div style=\"float:left;width:33%;height:40px;\">";
-                    html += "<span style=\"display:block;font-size:2em;overflow:hidden;white-space: nowrap;text-overflow: ellipsis\">" + emojijson[array[predicted]] + "<span style=\"white-space: nowrap;text-overflow: ellipsis;position:relative; font-family: 'Trebuchet MS'; font-color:grey; overflow:hidden; font-size:0.5em;\">" + array[predicted] + "</span>" + "</span>";
-                    html += "</div>";
-                    bar.innerHTML += html;
+                    var emojiPrediction = document.createElement("div");
+                    emojiPrediction.style.float = "left";
+                    emojiPrediction.style.width = "33%";
+                    emojiPrediction.style.height = "40px";
+                    var outerSpan = document.createElement("span");
+                    outerSpan.style.display = "block";
+                    outerSpan.style.fontSize = "2em";
+                    outerSpan.style.overflow = "hidden";
+                    outerSpan.style.whiteSpace = "nowrap";
+                    outerSpan.style.textOverflow = "ellipsis";
+                    outerSpan.appendChild(document.createTextNode(emojijson[array[predicted]]));
+
+                    var innerSpan = document.createElement("span");
+                    innerSpan.style.whiteSpace = "nowrap";
+                    innerSpan.style.textOverflow = "ellipsis";
+                    innerSpan.style.position = "relative";
+                    innerSpan.style.fontFamily = "Trebuchet MS";
+                    innerSpan.style.fontSize = "0.5em";
+                    innerSpan.style.overflow = "hidden";
+                    innerSpan.appendChild(document.createTextNode(array[predicted]));
+                    outerSpan.appendChild(innerSpan);
+                    emojiPrediction.appendChild(outerSpan);
+                    bar.appendChild(emojiPrediction);
                 }
             }
         }
@@ -143,6 +207,11 @@ var emojiTyper = function (v, e) {
     }
 };
 
+
+/**
+ * Calculate offset top and left position for a given element
+ * @param {*} element Element to calculate position of
+ */
 var cumulativeOffset = function (element) {
     var top = 0, left = 0;
     do {
@@ -157,6 +226,13 @@ var cumulativeOffset = function (element) {
     };
 };
 
+/**
+ * Overall list of emoji, greatfully provided by emoji dictionary
+ * https://github.com/IonicaBizau/emoji-dictionary
+ * 
+ * RELEASED UNDER MIT LICENCE - LICENSE INFORMATION:
+ * https://github.com/IonicaBizau/emoji-dictionary/blob/master/LICENSE
+ */
 var emojijson = {
     "100": "💯",
     "1234": "🔢",

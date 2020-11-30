@@ -5,7 +5,7 @@
     "name": "EmojiTyper",
     "version": "1.0",
     "homepage_url": "https://github.com/b-w-wilson/emojityper",
-    "permissions": ["<all_urls>"],
+    "permissions": [],
 
     "icons": {
       "128": "icons/emojityper.png"
